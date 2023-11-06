@@ -3,6 +3,8 @@
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 
+import logging
+import os
 from aiohttp import *
 from furl import furl
 
@@ -13,6 +15,12 @@ class HailoLibero:
     jar = CookieJar(unsafe=True)
 
     def __init__(self, ip_address: str, password: str = "hailo"):
+        logging.basicConfig(
+            level=os.environ.get("LOGLEVEL", "INFO").upper()
+        )
+
+        logging.info("Starting HailoLibero client...")
+
         base_url = self.base_url(ip_address)
 
         self.session = ClientSession(base_url, cookie_jar=self.jar)
@@ -23,8 +31,6 @@ class HailoLibero:
         return furl(scheme="http", host=ip_address, port=81).url
 
     async def configure(self, ip_address: str, pin: str):
-        print("Starting HailoLibero client...")
-
         # Cleanup old session first
         await self.session.close()
 
@@ -37,7 +43,7 @@ class HailoLibero:
         await self.session.close()
 
     async def auth(self):
-        print("Authing...")
+        logging.debug("Authing...")
 
         form_data = FormData()
         form_data.add_field("pin", self.pin)
@@ -49,35 +55,35 @@ class HailoLibero:
                     redirect_header = response.headers.get("Location")
 
                     if furl(redirect_header).path == "/":
-                        print("Auth successful!")
+                        logging.debug("Auth successful!")
                         return True
 
-                print("Auth failed.")
+                logging.debug("Auth failed.")
 
                 return False
 
         except ClientConnectorError as e:
-            print("Connection Error", str(e))
+            logging.error("Connection Error", str(e))
 
     async def check_auth(self):
-        print("Checking if already authed...")
+        logging.debug("Checking if already authed...")
 
         try:
             async with self.session.get("/", allow_redirects=False) as response:
                 # Assume if already authed we won't get redirected
                 if response.status == 200:
-                    print("Already authed...")
+                    logging.debug("Already authed...")
 
                     return True
                 elif response.status == 301:
-                    print("Not authed")
+                    logging.debug("Not authed")
 
                     return False
                 else:
                     raise Exception("Unknown auth error")
 
         except ClientConnectorError as e:
-            print("Connection Error", str(e))
+            logging.error("Connection Error", str(e))
 
     async def open(self, dry_run=False):
         authed = await self.check_auth()
@@ -91,16 +97,16 @@ class HailoLibero:
         try:
             async with self.session.get("/push") as response:
                 data = await response.text()
-                print("Open cabinet response:", data)
+                logging.debug("Open cabinet response:", data)
 
                 if response.status == 200 and data == "OK":
-                    print("Cabinet opened successfully!")
+                    logging.info("Cabinet opened successfully!")
 
                     return True
                 else:
-                    print("Cabinet opening failed.")
+                    logging.info("Cabinet opening failed.")
 
                     return False
 
         except ClientConnectorError as e:
-            print("Connection Error", str(e))
+            logging.error("Connection Error", str(e))

@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.normpath(f"{folder}/.."))
 from hailolibero import HailoLibero
 
 import asyncio
+import logging
 
 base_ip_address = "***REMOVED***"
 
@@ -26,7 +27,7 @@ async def open_cabinet():
 
 
 if __name__ == "__main__":
-    print("Starting HailoLibero client...")
+    print("Starting HailoLibero example...")
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
