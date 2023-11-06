@@ -5,26 +5,24 @@ import sys
 folder = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.normpath(f"{folder}/.."))
 
+# Sample
+
 from hailolibero import HailoLibero
 
 import asyncio
 
 base_ip_address = "***REMOVED***"
 
+
 async def open_cabinet():
     libero = HailoLibero(ip_address=base_ip_address)
 
-    authed = await libero.check_auth()
-
-    if not authed:
-        await libero.auth()
-
-    # await libero.push()
+    await libero.open(dry_run=True)
 
     base_url = libero.base_url(base_ip_address)
     print(libero.jar.filter_cookies(request_url=base_url))
 
-    await libero.close()
+    await libero.cleanup()
 
 
 if __name__ == '__main__':
