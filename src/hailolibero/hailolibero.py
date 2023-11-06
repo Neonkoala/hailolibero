@@ -6,44 +6,57 @@
 from aiohttp import *
 import asyncio
 from yarl import URL
+from furl import furl
 
-base_url = URL('http://***REMOVED***:81')
+# base_url = URL('http://***REMOVED***:81')
+base_ip_address = "***REMOVED***"
 
 
 class HailoLibero:
     session: ClientSession
+    pin: str
     jar = CookieJar(unsafe=True)
 
-    def __init__(self, device_url: URL):
-        self.session = ClientSession(device_url, cookie_jar=self.jar)
+    def __init__(self, ip_address: str, password: str = "hailo"):
+        base_url = self.base_url(ip_address)
 
-    async def configure(self, device_url: URL):
+        self.session = ClientSession(base_url, cookie_jar=self.jar)
+        self.pin = password
+
+    @staticmethod
+    def base_url(ip_address: str):
+        return furl(scheme="http", host=ip_address, port=81).url
+
+    async def configure(self, ip_address: str, pin: str):
         print('Starting HailoLibero client...')
 
         # Cleanup old session first
         await self.session.close()
 
-        self.session = ClientSession(device_url, cookie_jar=self.jar)
+        base_url = self.base_url(ip_address)
+
+        self.session = ClientSession(base_url, cookie_jar=self.jar)
+        self.pin = pin
 
     async def close(self):
         await self.session.close()
 
     async def auth(self):
-        form_data = FormData()
-        form_data.add_field("pin", "hailo")
-        # formData.add_field("submit", "")
+        print("Authing...")
 
-        async with self.session.post('/login', data=form_data) as response:
-            print("URL:", response.url)
-            print("Status:", response.status)
+        form_data = FormData()
+        form_data.add_field("pin", self.pin)
+
+        async with self.session.post('/login', data=form_data, allow_redirects=False) as response:
+            if response.status == 301:
+                print("Auth successful!")
+            else:
+                print("Auth failed.")
 
     async def check_auth(self):
         print("Checking if already authed...")
 
         async with self.session.get('/', allow_redirects=False) as response:
-            print("URL:", response.url)
-            print("Status:", response.status)
-
             if response.status == 200:
                 print("Already authed...")
 
@@ -63,7 +76,7 @@ class HailoLibero:
 
 
 async def test_run():
-    libero = HailoLibero(device_url=base_url)
+    libero = HailoLibero(ip_address=base_ip_address)
 
     authed = await libero.check_auth()
 
@@ -72,6 +85,7 @@ async def test_run():
 
     # await libero.push()
 
+    base_url = libero.base_url(base_ip_address)
     print(libero.jar.filter_cookies(request_url=base_url))
 
     await libero.close()
