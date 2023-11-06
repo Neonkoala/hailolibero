@@ -25,8 +25,8 @@ async def open_cabinet():
     await libero.cleanup()
 
 
-if __name__ == '__main__':
-    print('Starting HailoLibero client...')
+if __name__ == "__main__":
+    print("Starting HailoLibero client...")
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
