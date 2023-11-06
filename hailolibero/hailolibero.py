@@ -4,12 +4,7 @@
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 
 from aiohttp import *
-import asyncio
-from yarl import URL
 from furl import furl
-
-# base_url = URL('http://***REMOVED***:81')
-base_ip_address = "***REMOVED***"
 
 
 class HailoLibero:
@@ -66,35 +61,10 @@ class HailoLibero:
 
                 return False
 
-    async def push(self):
+    async def open(self):
         async with self.session.get('/push') as response:
             print("URL:", response.url)
             print("Status:", response.status)
 
             data = await response.text()
             print("Open cabinet:", data)
-
-
-async def test_run():
-    libero = HailoLibero(ip_address=base_ip_address)
-
-    authed = await libero.check_auth()
-
-    if not authed:
-        await libero.auth()
-
-    # await libero.push()
-
-    base_url = libero.base_url(base_ip_address)
-    print(libero.jar.filter_cookies(request_url=base_url))
-
-    await libero.close()
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print('Starting HailoLibero client...')
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(test_run())
