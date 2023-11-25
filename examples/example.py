@@ -12,7 +12,7 @@ from hailolibero import HailoLibero
 import asyncio
 import logging
 
-base_ip_address = "***REMOVED***"
+base_ip_address = "127.0.0.1"
 
 
 async def open_cabinet():
