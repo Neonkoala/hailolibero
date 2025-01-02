@@ -5,13 +5,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hailolibero"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
   "furl>2.0.0",
   "beautifulsoup4>4.12.0"
 ]
 authors = [
   { name="Nick Dawson", email="nick@dawson.au" },
+  { name="Voldemar", email="voldemar@hotmail.com" },
 ]
 description = "Python library to interface with the Hailo Libero 3.0"
 readme = "README.md"
