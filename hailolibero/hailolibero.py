@@ -43,17 +43,16 @@ class HailoInfo(BaseModel):
 class HailoLibero:
     session: ClientSession
     pin: str
-    jar = CookieJar(unsafe=True)
+    jar: None
     settings: HailoSettings
     info: HailoInfo
+    ip_address: str
 
     def __init__(self, ip_address: str, password: str = "hailo"):
 
         logging.info("Starting HailoLibero client...")
 
-        base_url = self.base_url(ip_address)
-
-        self.session = ClientSession(base_url, cookie_jar=self.jar)
+        self.ip_address = ip_address
         self.pin = password
 
         atexit.register(self._shutdown)
@@ -69,8 +68,8 @@ class HailoLibero:
         # Cleanup old session first
         await self.session.close()
 
-        base_url = self.base_url(ip_address)
-
+        base_url = self.base_url(self.ip_address)
+        self.jar = CookieJar(unsafe=True)
         self.session = ClientSession(base_url, cookie_jar=self.jar)
         self.pin = pin
 
@@ -79,6 +78,10 @@ class HailoLibero:
 
     async def auth(self):
         logging.debug("Authing...")
+
+        base_url = self.base_url(self.ip_address)
+        self.jar = CookieJar(unsafe=True)
+        self.session = ClientSession(base_url, cookie_jar=self.jar)
 
         form_data = FormData()
         form_data.add_field("pin", self.pin)
@@ -120,7 +123,7 @@ class HailoLibero:
         except ClientConnectorError as e:
             logging.error("Connection Error", str(e))
 
-    async def read_settings(self,dry_run=False):
+    async def read_settings(self):
         result_settings = {}
         result_info = {}
 
